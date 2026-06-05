@@ -76,19 +76,24 @@ pipeline {
         }
 
         stage('Deploy to Kubernetes') {
-            steps {
-                sh '''
-                    kubectl apply -f k8s/configmap/app-configmap.yaml
-                    kubectl apply -f k8s/secret/app-secret.yaml
-                    kubectl apply -f k8s/mongodb/statefulset.yaml
-                    kubectl apply -f k8s/mongodb/service.yaml
-                    kubectl apply -f k8s/backend/deployment.yaml
-                    kubectl apply -f k8s/backend/service.yaml
-                    kubectl rollout restart deployment backend
-                    kubectl rollout status deployment backend
-                '''
-            }
-        }
+ 	   steps {
+        	sh '''
+            	    kubectl apply -f k8s/configmap/app-configmap.yaml
+            	    kubectl apply -f k8s/secret/app-secret.yaml
+            	    kubectl apply -f k8s/mongodb/statefulset.yaml
+            	    kubectl apply -f k8s/mongodb/service.yaml
+            	    kubectl apply -f k8s/backend/deployment.yaml
+            	    kubectl apply -f k8s/backend/service.yaml
+            	    kubectl apply -f k8s/frontend/deployment.yaml
+            	    kubectl apply -f k8s/frontend/service.yaml
+            	    kubectl apply -f k8s/ingress/ingress.yaml
+            	    kubectl rollout restart deployment backend
+            	    kubectl rollout restart deployment frontend
+            	    kubectl rollout status deployment backend
+            	    kubectl rollout status deployment frontend
+        	'''
+    	     }
+	}		
     }
 
     post {
