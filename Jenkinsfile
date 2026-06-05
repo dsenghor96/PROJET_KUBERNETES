@@ -62,18 +62,30 @@ pipeline {
                 )]) {
                     sh '''
                         echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+
                         docker push "$BACKEND_IMAGE"
                         docker push "$FRONTEND_IMAGE"
+
+                        docker tag "$BACKEND_IMAGE" "${DOCKERHUB_USER}/portfolio-api:latest"
+                        docker tag "$FRONTEND_IMAGE" "${DOCKERHUB_USER}/portfolio-react:latest"
+                        docker push "${DOCKERHUB_USER}/portfolio-api:latest"
+                        docker push "${DOCKERHUB_USER}/portfolio-react:latest"
                     '''
                 }
             }
         }
 
-        stage('Deploy') {
+        stage('Deploy to Kubernetes') {
             steps {
                 sh '''
-                    docker rm -f portfolio_mongodb portfolio_backend portfolio_frontend || true
-                    docker compose up -d --build mongodb backend frontend
+                    kubectl apply -f k8s/configmap/app-configmap.yaml
+                    kubectl apply -f k8s/secret/app-secret.yaml
+                    kubectl apply -f k8s/mongodb/statefulset.yaml
+                    kubectl apply -f k8s/mongodb/service.yaml
+                    kubectl apply -f k8s/backend/deployment.yaml
+                    kubectl apply -f k8s/backend/service.yaml
+                    kubectl rollout restart deployment backend
+                    kubectl rollout status deployment backend
                 '''
             }
         }
@@ -82,8 +94,6 @@ pipeline {
     post {
         success {
             echo "Pipeline execute avec succes"
-            echo "Frontend : http://localhost:5173"
-            echo "Backend  : http://localhost:3000"
 
             emailext(
                 subject: "Jenkins - Build #${BUILD_NUMBER} reussi",
