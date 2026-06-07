@@ -4,7 +4,8 @@ pipeline {
     environment {
         DOCKERHUB_USER = "dieys"
         BACKEND_IMAGE = "${DOCKERHUB_USER}/portfolio-api:${BUILD_NUMBER}"
-        FRONTEND_IMAGE = "${DOCKERHUB_USER}/portfolio-react:${BUILD_NUMBER}"
+        KUBECONFIG = "/var/jenkins_home/.kube/config"
+	FRONTEND_IMAGE = "${DOCKERHUB_USER}/portfolio-react:${BUILD_NUMBER}"
     }
 
     stages {
